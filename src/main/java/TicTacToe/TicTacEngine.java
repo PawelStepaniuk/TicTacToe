@@ -8,6 +8,8 @@ public class TicTacEngine {
     boolean Owins;
     String inputData;
     char[][] ticTacArray;
+    boolean flag;
+    boolean over;
 
     public TicTacEngine(String inputData) {
         this.Xwins = false;
@@ -17,12 +19,12 @@ public class TicTacEngine {
 
     }
 
-    public char[][] fillTheArray(String inputData){
+    public char[][] fillTheArray(String inputData) {
         char[] xo = inputData.toCharArray();
         char[][] tmp = new char[3][3];
 
         for (int i = 0; i < 9; i++) {
-            tmp[i/3][i%3] = xo[i];
+            tmp[i / 3][i % 3] = xo[i];
         }
         return tmp;
     }
@@ -36,87 +38,91 @@ public class TicTacEngine {
         System.out.println("---------");
     }
 
-    public boolean isImpossible() {
-        long x = inputData.chars().filter(e -> e == 'X').count();
-        long y = inputData.chars().filter(e -> e == 'O').count();
-        return Math.abs(x - y) > 1;
+
+
+    boolean win(char value) {
+
+        if (ticTacArray[0][0] == value && ticTacArray[0][1] == value && ticTacArray[0][2] == value) {
+            return true;
+        }
+        if (ticTacArray[1][0] == value && ticTacArray[1][1] == value && ticTacArray[1][2] == value) {
+            return true;
+        }
+        if (ticTacArray[2][0] == value && ticTacArray[2][1] == value && ticTacArray[2][2] == value) {
+            return true;
+        }
+
+        if (ticTacArray[0][0] == value && ticTacArray[1][0] == value && ticTacArray[2][0] == value) {
+            return true;
+        }
+        if (ticTacArray[0][1] == value && ticTacArray[1][1] == value && ticTacArray[2][1] == value) {
+            return true;
+        }
+        if (ticTacArray[0][2] == value && ticTacArray[1][2] == value && ticTacArray[2][2] == value) {
+            return true;
+        }
+        if (ticTacArray[0][0] == value && ticTacArray[1][1] == value && ticTacArray[2][2] == value) {
+            return true;
+        }
+        if (ticTacArray[0][2] == value && ticTacArray[1][1] == value && ticTacArray[2][0] == value) {
+            return true;
+        }
+
+        return false;
     }
 
-    public void analyzeResults() {
-        checkRows();
-        checkColumns();
-        checkDiagonals();
+    String score() {
+        if ((win('X')) && (win('O'))) {
+            return ("draw");
+
+        } else if (win('O')) {
+            over = true;
+            return ("O wins");
+        } else if (win('X')) {
+            over = true;
+            return ("X wins");
+        } else if (draw()) {
+            over = true;
+            return ("Draw");
+        } else if (gameNotFinished()) {
+            return ("Game not finished");
+        } else return ("Impossible");
     }
 
-    public void checkRows() {
-        char winnerResult;
-
-        for (int i = 0; i < 3; i += 1) {
-            winnerResult = ticTacArray[i][0];
-            if (winnerResult == ticTacArray[i][1] && winnerResult == ticTacArray[i][2]) {
-                setWinner(winnerResult);
+    boolean draw() {
+        for (char[] chars : ticTacArray) {
+            for (int j = 0; j < ticTacArray.length; j++) {
+                if (chars[j] == ' ') {
+                    return false;
+                }
             }
         }
+        return true;
     }
 
-    public void checkColumns() {
-        char winnerResult;
-
-        for (int i = 0; i < 3; i++) {
-            winnerResult = ticTacArray[0][i];
-            if (winnerResult == ticTacArray[1][i] && winnerResult == ticTacArray[2][i]) {
-                setWinner(winnerResult);
+    boolean gameNotFinished() {
+        int o = 0;
+        int x = 0;
+        for (char[] chars : ticTacArray) {
+            for (int j = 0; j < ticTacArray.length; j++) {
+                if (chars[j] == 'X') {
+                    x++;
+                } else if (chars[j] == 'O') {
+                    o++;
+                }
             }
         }
+        return o == x;
     }
 
-    public void checkDiagonals() {
-        char topLeftCorner = ticTacArray[0][0];
-        char topRightCorner = ticTacArray[0][2];
-
-        if (topLeftCorner == '_' && topRightCorner == '_') {
-            return;
-        }
-        if (topLeftCorner == ticTacArray[1][1] && topLeftCorner == ticTacArray[2][2]) {
-            setWinner(topLeftCorner);
-        }
-        if (topRightCorner == ticTacArray[1][1] && topRightCorner == ticTacArray[2][0]) {
-            setWinner(topRightCorner);
-        }
-    }
-
-    public void setWinner(char winnerResult){
-        if (winnerResult == 'X') {
-            Xwins = true;
-        } else {
-            Owins = true;
-        }
-    }
-
-    public String printWinner() {
-        if (!Xwins && !Owins && inputData.chars().filter(e -> e == '_').count() == 0) {
-            return "Draw";
-        }
-        if (Xwins && Owins) {
-            return "Impossible";
-        }
-        if (Xwins) {
-            return "X wins";
-        }
-        if (Owins) {
-            return "O wins";
-        }
-        return "Game not finished";
-    }
-
-    public void updateBoard() {
+    public void updateBoard(char value) {
 
         Scanner scanner = new Scanner(System.in);
 
         int first;
         int second;
 
-        while (true) {
+        while (!flag) {
             String userInputLine = scanner.nextLine();
 
             try {
@@ -136,15 +142,38 @@ public class TicTacEngine {
                 continue;
             }
 
-            if (ticTacArray[3 - second][first - 1] != '_') {
+            if (ticTacArray[3 - second][first - 1] == '_' || ticTacArray[3 - second][first - 1] == ' ') {
+                ticTacArray[3 - second][first - 1] = value;
+                flag = true;
+                printField();
+
+
+            } else {
+                System.out.println((ticTacArray[3 - second][first - 1] != '_') + "        " + (ticTacArray[3 - second][first - 1] != ' '));
                 System.out.println("This cell is occupied! Choose another one.");
-                continue;
             }
 
-            ticTacArray[3 - second][first - 1] = 'X';
-            printField();
-            break;
         }
-        scanner.close();
+        flag = false;
+    }
+
+    public void game() {
+        printField();
+        char valueX = 'X';
+        char valueO = 'O';
+        boolean mark = true;
+
+        do {
+            if (mark){
+                updateBoard(valueX);
+                mark = false;
+            }else {
+                updateBoard(valueO);
+                mark = true;
+            }
+            score();
+        } while (!over);
+
+        System.out.println(score());
     }
 }
